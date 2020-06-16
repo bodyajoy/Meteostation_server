@@ -3,7 +3,6 @@ const Sensor = db.sensor;
 
 //TESTING RANDOM
 exports.addSensorUpdate = (req, res) => {
-
   const sensor = new Sensor({
     timestamp_of_insert: new Date(),
     id_sensor: 1,
@@ -25,3 +24,23 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+/*PRODUCTION
+exports.addSensorUpdate = (req, res) => {
+
+  const sensor = new Sensor({
+    timestamp_of_insert: new Date(),
+    id_sensor: req.body.id,
+    timestamp_of_sensor: req.body.Date,
+    temperature: req.body.Temperature,
+    pressure: req.body.Pressure,
+  });
+
+  sensor.save((err, result) => {
+    if (err) {
+      return res.status(200).send({ error: err });
+    }
+    return res.status(200).send(result);
+  });
+};
+*/
