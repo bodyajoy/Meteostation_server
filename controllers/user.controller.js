@@ -1,13 +1,10 @@
 const db = require("../models");
 const Sensor = db.sensor;
-const periodArray = [`day`, `week`, `month`];
 
 exports.getTemperatureAvg = (req, res) => {
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
   let date_now = new Date();
-
+  const period = req.params.period;
+  
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
   }
@@ -38,12 +35,8 @@ exports.getTemperatureAvg = (req, res) => {
 };
 
 exports.getPressureAvg = (req, res) => {
-  const period = req.params.period;
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
-
   let date_now = new Date();
+  const period = req.params.period;
 
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
@@ -75,12 +68,8 @@ exports.getPressureAvg = (req, res) => {
 };
 
 exports.getTemperatureMin = (req, res) => {
-  const period = req.params.period;
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
-
   let date_now = new Date();
+  const period = req.params.period;
 
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
@@ -114,12 +103,8 @@ exports.getTemperatureMin = (req, res) => {
 };
 
 exports.getPressureMin = (req, res) => {
-  const period = req.params.period;
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
-
   let date_now = new Date();
+  const period = req.params.period;
 
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
@@ -153,12 +138,8 @@ exports.getPressureMin = (req, res) => {
 };
 
 exports.getTemperatureMax = (req, res) => {
-  const period = req.params.period;
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
-
   let date_now = new Date();
+  const period = req.params.period;
 
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
@@ -192,12 +173,8 @@ exports.getTemperatureMax = (req, res) => {
 };
 
 exports.getPressureMax = (req, res) => {
-  const period = req.params.period;
-  if (!period || !periodArray.includes(period)) {
-    return res.status(500).send({ error: "No period! Use day / week / month" });
-  }
-
   let date_now = new Date();
+  const period = req.params.period;
 
   if (period === `day`) {
     date_now.setDate(date_now.getDate() - 1);
