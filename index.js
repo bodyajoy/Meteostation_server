@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = require("./models");
 db.mongoose.set("useCreateIndex", true);
 
+//делаем коннект к базе, если не будет коннектта - программа офнется
 db.mongoose
   .connect(
     `mongodb+srv://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.HOST}/${dbConfig.DB}?retryWrites=true&w=majority`,
@@ -34,7 +35,7 @@ app.get("/", (req, res) => {
   return res.status(200).send("OK");
 });
 
-// routes
+// разделение пути, есть путь для сенсоров, есть путь для пользовательских интерфейсов
 require("./routes/user.routes")(app);
 require("./routes/sensor.routes")(app);
 

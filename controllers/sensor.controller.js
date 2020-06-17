@@ -1,7 +1,7 @@
 const db = require("../models");
 const Sensor = db.sensor;
 
-//TESTING RANDOM
+//TESTING RANDOM наполяем базу данных рандомными элементами, дату потом правим вручную в БД МонгоАтлас
 exports.addSensorUpdate = (req, res) => {
   const sensor = new Sensor({
     timestamp_of_insert: new Date(),
