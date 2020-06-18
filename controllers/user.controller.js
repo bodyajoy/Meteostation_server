@@ -1,212 +1,138 @@
 const db = require("../models");
-const Sensor = db.sensor;
+const StationUpdate = db.stationUpdate;
 
-//по названиям догадаешься, что делают
+exports.getAll = (req, res) => {
+  StationUpdate.find(
+    {
+      id_station: req.params.id,
+      timestamp_of_station: { $gte: req.params.period },
+    },
+    null,
+    { sort: { timestamp_of_station: -1 } }, //по убыванию
+    (err, docs) => {
+      if (err) {
+        return res.status(500).send({ error: err });
+      }
+      //docs = {}; проверка на пустое значение
+      if (!Object.keys(docs).length) {
+        return res.status(200).send(docs);
+      }
 
-exports.getTemperatureAvg = (req, res) => {
-  let date_now = new Date(); //дату в момент запроса определеяем
-  const period = req.params.period; //вычленяем период, который указали (миддваре уже проверил, что совпадение есть)
-  
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1); //делаем дату на один день раньше
-  }
+      return res.status(200).send({
+        lastUpdate: docs[0].timestamp_of_station,
+        temperature: {
+          min: findMinByDocs(docs, "temperature"),
+          max: findMaxByDocs(docs, "temperature"),
+          avg: findAvgByDocs(docs, "temperature"),
+        },
+        pressure: {
+          min: findMinByDocs(docs, "pressure"),
+          max: findMaxByDocs(docs, "pressure"),
+          avg: findAvgByDocs(docs, "pressure"),
+        },
+      });
+    }
+  );
+};
 
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7); //делаем дату на 7 дней раньше
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30); //делаем дату на 30 дней раньше
-  }
-
-  //запрос в коллекцию
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } }, //айди сенсора такой-то, а дату по сенсора ставим больше, чем вычислили сверху
-    "temperature", //нам нужно только поле температуры
+exports.getAvg = (req, res) => {
+  StationUpdate.find(
+    {
+      id_station: req.params.id,
+      timestamp_of_station: { $gte: req.params.period },
+    },
+    `${req.params.sensor}`,
     null,
     (err, docs) => {
       if (err) {
         return res.status(500).send({ error: err });
       }
-      //складываем все температуры
-      let avg = 0; 
-      docs.forEach((element) => {
-        avg += element.temperature;
+      return res.status(200).send({
+        [req.params.sensor + `_avg`]: findAvgByDocs(docs, req.params.sensor),
       });
-      return res.status(200).send({ result: avg / docs.length }); //находим среднее арифметическое
     }
   );
 };
 
-exports.getPressureAvg = (req, res) => {
-  let date_now = new Date();
-  const period = req.params.period;
-
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1);
-  }
-
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7);
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30);
-  }
-
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } },
-    "pressure",
+exports.getMin = (req, res) => {
+  StationUpdate.find(
+    {
+      id_station: req.params.id,
+      timestamp_of_station: { $gte: req.params.period },
+    },
+    `${req.params.sensor} timestamp_of_station`,
     null,
     (err, docs) => {
       if (err) {
         return res.status(500).send({ error: err });
       }
-      let avg = 0;
-      docs.forEach((element) => {
-        avg += element.pressure;
+      const results = findMinByDocs(docs, req.params.sensor);
+      return res.status(200).send({
+        [req.params.sensor + `_min`]: results.minElement,
+        timestamps: results.indexMin,
       });
-      return res.status(200).send({ avg_pressure: avg / docs.length });
     }
   );
 };
 
-exports.getTemperatureMin = (req, res) => {
-  let date_now = new Date();
-  const period = req.params.period;
-
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1);
-  }
-
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7);
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30);
-  }
-
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } },
-    "temperature",
+exports.getMax = (req, res) => {
+  StationUpdate.find(
+    {
+      id_station: req.params.id,
+      timestamp_of_station: { $gte: req.params.period },
+    },
+    `${req.params.sensor} timestamp_of_station`,
     null,
     (err, docs) => {
       if (err) {
         return res.status(500).send({ error: err });
       }
-      let minArray = [];
-      docs.forEach((element) => {
-        minArray.push(element.temperature);
+      const results = findMaxByDocs(docs, req.params.sensor);
+      return res.status(200).send({
+        [req.params.sensor + `_max`]: results.maxElement,
+        timestamps: results.indexMax,
       });
-      return res
-        .status(200)
-        .send({ min_temperature: Math.min.apply(Math, minArray) });
     }
   );
 };
 
-exports.getPressureMin = (req, res) => {
-  let date_now = new Date();
-  const period = req.params.period;
+//type точное название поля
+function findAvgByDocs(docs, type) {
+  let avg = 0;
+  docs.forEach((element) => {
+    avg += element[type];
+  });
+  return avg / docs.length;
+}
 
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1);
-  }
+function findMaxByDocs(docs, type) {
+  let maxArray = [];
+  docs.forEach((element) => {
+    maxArray.push(element[type]);
+  });
+  const maxElement = Math.max.apply(Math, maxArray);
+  let indexMax = [];
 
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7);
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30);
-  }
-
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } },
-    "pressure",
-    null,
-    (err, docs) => {
-      if (err) {
-        return res.status(500).send({ error: err });
-      }
-      let minArray = [];
-      docs.forEach((element) => {
-        minArray.push(element.pressure);
-      });
-      return res
-        .status(200)
-        .send({ min_pressure: Math.min.apply(Math, minArray) });
+  docs.forEach((element) => {
+    if (element[type] === maxElement) {
+      indexMax.push(element.timestamp_of_station);
     }
-  );
-};
+  });
+  return { maxElement, indexMax };
+}
 
-exports.getTemperatureMax = (req, res) => {
-  let date_now = new Date();
-  const period = req.params.period;
+function findMinByDocs(docs, type) {
+  let minArray = [];
+  docs.forEach((element) => {
+    minArray.push(element[type]);
+  });
+  const minElement = Math.min.apply(Math, minArray);
+  let indexMin = [];
 
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1);
-  }
-
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7);
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30);
-  }
-
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } },
-    "temperature",
-    null,
-    (err, docs) => {
-      if (err) {
-        return res.status(500).send({ error: err });
-      }
-      let maxArray = [];
-      docs.forEach((element) => {
-        maxArray.push(element.temperature);
-      });
-      return res
-        .status(200)
-        .send({ max_temperature: Math.max.apply(Math, maxArray) });
+  docs.forEach((element) => {
+    if (element[type] === minElement) {
+      indexMin.push(element.timestamp_of_station);
     }
-  );
-};
-
-exports.getPressureMax = (req, res) => {
-  let date_now = new Date();
-  const period = req.params.period;
-
-  if (period === `day`) {
-    date_now.setDate(date_now.getDate() - 1);
-  }
-
-  if (period === `week`) {
-    date_now.setDate(date_now.getDate() - 7);
-  }
-
-  if (period === `month`) {
-    date_now.setDate(date_now.getDate() - 30);
-  }
-
-  Sensor.find(
-    { id_sensor: req.params.id, timestamp_of_sensor: { $gte: date_now } },
-    "pressure",
-    null,
-    (err, docs) => {
-      if (err) {
-        return res.status(500).send({ error: err });
-      }
-      let maxArray = [];
-      docs.forEach((element) => {
-        maxArray.push(element.pressure);
-      });
-      return res
-        .status(200)
-        .send({ max_pressure: Math.max.apply(Math, maxArray) });
-    }
-  );
-};
+  });
+  return { minElement, indexMin };
+}

@@ -1,7 +1,7 @@
 const { auth, check } = require("../middlewares");
-const sensor_controller = require("../controllers/sensor.controller");
+const station_controller = require("../controllers/station.controller");
 
 module.exports = function (app) {
   //добавляем данные с сенсора
-  app.post(`/api/add`, [auth.auth], sensor_controller.addSensorUpdate);
+  app.post(`/api/add`, [auth.auth], station_controller.addStationUpdate);
 };

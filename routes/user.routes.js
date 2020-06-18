@@ -1,44 +1,29 @@
 //const { check } = require("../middlewares");
 const user_controller = require("../controllers/user.controller"); //контроллер для обработки запроса
-const { checkID, checkPeriod } = require("../middlewares/check"); //различные middleware проверки
+const { checkID, checkPeriod, checkSensor } = require("../middlewares/check"); //различные middleware проверки
 
 module.exports = function (app) {
-  //средние
   app.get(
-    `/api/get/:id/temperature/avg/:period`,
+    `/api/get/:id/all/:period`,
     [checkID, checkPeriod],
-    user_controller.getTemperatureAvg
+    user_controller.getAll
   );
 
   app.get(
-    `/api/get/:id/pressure/avg/:period`,
-    [checkID, checkPeriod],
-    user_controller.getPressureAvg
-  );
-
-  //минимум
-  app.get(
-    `/api/get/:id/temperature/min/:period`,
-    [checkID, checkPeriod],
-    user_controller.getTemperatureMin
+    `/api/get/:id/:sensor/avg/:period`,
+    [checkID, checkPeriod, checkSensor],
+    user_controller.getAvg
   );
 
   app.get(
-    `/api/get/:id/pressure/min/:period`,
-    [checkID, checkPeriod],
-    user_controller.getPressureMin
-  );
-
-  //максимум
-  app.get(
-    `/api/get/:id/temperature/max/:period`,
-    [checkID, checkPeriod],
-    user_controller.getTemperatureMax
+    `/api/get/:id/:sensor/min/:period`,
+    [checkID, checkPeriod, checkSensor],
+    user_controller.getMin
   );
 
   app.get(
-    `/api/get/:id/pressure/max/:period`,
-    [checkID, checkPeriod],
-    user_controller.getPressureMax
+    `/api/get/:id/:sensor/max/:period`,
+    [checkID, checkPeriod, checkSensor],
+    user_controller.getMax
   );
 };

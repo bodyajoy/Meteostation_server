@@ -5,6 +5,6 @@ const db = {};
 
 db.mongoose = mongoose;
 
-db.sensor = require("./sensor.model");
+db.stationUpdate = require("./station_update.model");
 
 module.exports = db;
